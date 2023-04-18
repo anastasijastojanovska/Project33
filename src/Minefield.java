@@ -10,6 +10,7 @@ public class Minefield {
     /**
     Global Section
     */
+    //made a comment
     public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String ANSI_BLUE_BRIGHT = "\u001b[34;1m";
     public static final String ANSI_BLUE = "\u001b[34m";
