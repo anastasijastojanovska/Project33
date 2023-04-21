@@ -6,7 +6,10 @@ public class Minefield {
     private int columns;
     private int flags;
 
-    private Cell[][] minefield;
+    private int[][] cellValues;
+
+
+    Cell[][] minefield;
     /**
     Global Section
     */
@@ -29,23 +32,61 @@ public class Minefield {
         this.columns = columns;
         this.flags = flags;
 
+        this.cellValues = new int[rows][columns];
         this.minefield = new Cell[rows][columns];
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 minefield[i][j] = new Cell(false, "");
+                cellValues[i][j] = 0;
             }
         }
 
     }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public int getColumns() {
+        return columns;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public Cell[][] getMinefield() {
+        return minefield;
+    }
+
     /**
      * evaluateField
      *
      * @function When a mine is found in the field, calculate the surrounding 9x9 tiles values. If a mine is found, increase the count for the square.
      */
     public void evaluateField() {
-
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                if (minefield[i][j].getStatus().equals("mine")) {
+                    incrementSurroundingCells(i, j);
+                }
+            }
+        }
     }
+
+    //Helper function for the evaluateField method
+    private void incrementSurroundingCells(int x, int y) {
+        for (int i = x-1; i <= x+1; i++) {
+            for (int j = y-1; j <= y+1; j++) {
+                if (i >= 0 && i < rows && j >= 0 && j < columns) {
+                    cellValues[i][j]++;
+                }
+            }
+        }
+    }
+
+
     /**
      * createMines
      *
@@ -54,39 +95,37 @@ public class Minefield {
      * @param mines      Number of mines to place.
      */
     public void createMines(int x, int y, int mines) {
-        boolean[][] minefield = new boolean[rows][columns];
-
-        //Initially setting all the cells to false, because there are no mines initially
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                minefield[i][j] = false;
-            }
-        }
-
-        //Avoiding tp place a mine on the starting square
-        minefield[x][y] = true;
-
+        // Avoiding to place a mine on the starting square
+        minefield[x][y].setStatus("N");
 
         Stack1Gen<Integer> stack = new Stack1Gen<>();
 
         while (mines > 0) {
             int randX = (int) (Math.random() * rows);
             int randY = (int) (Math.random() * columns);
-            if (!minefield[randX][randY]) {
-                minefield[randX][randY] = true;
-                stack.push(randX * columns + randY);
-                mines--;
+            if (randX == x && randY == y) {
+                continue;
             }
+            if (minefield[randX][randY].getStatus().equals("M") || minefield[randX][randY].getRevealed()) {
+                continue;
+            }
+            minefield[randX][randY].setStatus("M");
+            stack.push(randX * columns + randY);
+            mines--;
         }
 
-        //Popping the mine positions from the stack and setting the corresponding cells in the minefield
+        // Popping the mine positions from the stack and setting the corresponding cells in the minefield
         while (!stack.isEmpty()) {
             int index = stack.pop();
             int row = index / columns;
             int col = index % columns;
-            minefield[row][col] = true;
+            Cell cell = minefield[row][col];
+            if (!cell.getStatus().equals("M")) {
+                cell.setStatus("N");
+            }
         }
     }
+
 
     /**
      * guess
@@ -97,16 +136,58 @@ public class Minefield {
      * @return boolean Return false if guess did not hit mine or if flag was placed, true if mine found.
      */
     public boolean guess(int x, int y, boolean flag) {
+        // Check if guess is in-bounds
+        if (x < 0 || x >= rows || y < 0 || y >= columns) {
+            System.out.println("Invalid guess: out of bounds.");
+            return false;
+        }
 
+        // If flag is placed, check if there are enough flags remaining
+        if (flag) {
+            if (flags == 0) {
+                System.out.println("No more flags remaining.");
+                return false;
+            }
+            minefield[x][y].setStatus("F");
+            flags--;
+            return false;
+        }
+
+        // Check if cell has already been revealed
+        if (minefield[x][y].getRevealed()) {
+            System.out.println("Cell already revealed.");
+            return false;
+        }
+        // Check if the user has hit a mine
+        if (minefield[x][y].getStatus().equals("M")) {
+            minefield[x][y].setRevealed(true);
+            return true;
+        }
+        // Check if the user has hit a cell with '0' status
+        if (minefield[x][y].getStatus().equals("0")) {
+            revealZeroes(x, y);
+        }
+        // Set the revealed status of the cell
+        minefield[x][y].setRevealed(true);
+        return false;
     }
+
     /**
      * gameOver
      *
      * @return boolean Return false if game is not over and squares have yet to be revealed, otheriwse return true.
      */
     public boolean gameOver() {
-
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                if (minefield[i][j].getStatus().equals("N") && !minefield[i][j].getRevealed()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
+
 
     /**
      * revealField
@@ -152,8 +233,32 @@ public class Minefield {
      * *This method should print out when debug mode has been selected. 
      */
     public void printMinefield() {
+        for (int i = 0; i < rows; i++) {
+            System.out.printf("%2d |", i);
+            for (int j = 0; j < columns; j++) {
+                if (minefield[i][j].getStatus().equals("M")) {
+                    System.out.print(" X ");
+                } else if (minefield[i][j].getRevealed()) {
+                    int count = 0;
+                    try {
+                        count = Integer.parseInt(minefield[i][j].getStatus());
+                    } catch (NumberFormatException e) {
+                        // handle the exception by treating the status as 0
+                    }
+                    if (count == 0) {
+                        System.out.print("   ");
+                    } else {
+                        System.out.printf(" %d ", count);
+                    }
+                } else {
+                    System.out.print(" - ");
+                }
+            }
+            System.out.println("|");
+        }
 
     }
+
 
     /**
      * toString
@@ -161,6 +266,6 @@ public class Minefield {
      * @return String The string that is returned only has the squares that has been revealed to the user or that the user has guessed.
      */
     public String toString() {
-
+    return "";
     }
 }
