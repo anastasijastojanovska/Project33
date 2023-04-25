@@ -86,6 +86,31 @@ public class Minefield {
         }
     }
 
+    private boolean isValid(int x, int y){
+      if(x >= 0 && x < rows && y >= 0 && y < columns){
+        return true;
+      }
+
+      return false;
+    }
+
+    /*
+    private int[][] getAdjacentCells(int x, y){
+
+      ArrayList<int[]> adjCells = new ArrayList<int[]>();
+
+      for (int i = x-1; i <= x+1; i++) {
+            for (int j = y-1; j <= y+1; j++) {
+                if (i >= 0 && i < rows && j >= 0 && j < columns) {
+                    cellValues[i][j]++
+                }
+            }
+      }
+
+      return adjacentCells;
+
+    }*/
+
 
     /**
      * createMines
@@ -199,8 +224,28 @@ public class Minefield {
      * @param y      The y value the user entered.
      */
     public void revealZeroes(int x, int y) {
+      Stack1Gen<int[]> cellStack = new Stack1Gen<int[]>();
+
+      int[] startingCords = {x,y};
+      cellStack.push(startingCords);
+
+      while(!cellStack.isEmpty()){
+        int[] rootCords = cellStack.pop();
+        minefield[rootCords[0]][rootCords[1]].setRevealed(true);
 
 
+        for (int i = rootCords[0]-1; i <= x+1; i++) {
+            for (int j = rootCords[1]-1; j <= y+1; j++) {
+                if (i >= 0 && i < rows && j >= 0 && j < columns) {
+                    if(minefield[i][j].getRevealed() != true && minefield[i][j].getStatus().equals("0")){
+                      int[] adjCell = {i,j};
+                      cellStack.push(adjCell);
+                    }
+                }
+          }
+       }
+
+      }
     }
 
     /**
@@ -213,8 +258,30 @@ public class Minefield {
      * @param y     The y value the user entered.
      */
     public void revealMines(int x, int y) {
+      Q1Gen<int[]> CellQueue = new Q1Gen<int[]>();
 
+      int[] rootCell = {x,y};
+      CellQueue.add(rootCell);
 
+      while(CellQueue.length() > 0){
+        int[] frontCell = CellQueue.remove();
+        minefield[frontCell[0]][frontCell[1]].setRevealed(true);
+
+        if(minefield[frontCell[0]][frontCell[1]].getStatus().equals("M")){
+          return;
+        }
+
+        for (int i = frontCell[0]-1; i <= x+1; i++) {
+            for (int j = frontCell[1]-1; j <= y+1; j++) {
+                if (i >= 0 && i < rows && j >= 0 && j < columns) {
+                    if(minefield[i][j].getRevealed() != true){
+                      int[] reachableCell = {i,j};
+                      CellQueue.add(reachableCell);
+                    }
+                }
+          }
+       } 
+      }
     }
 
     /**
@@ -223,6 +290,7 @@ public class Minefield {
      * @param x       The x value the user entered.
      * @param y       The y value the user entered.
      */
+
     public void revealStart(int x, int y) {
 
     }

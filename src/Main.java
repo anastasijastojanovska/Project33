@@ -2,9 +2,9 @@ public class Main {
 
 
     public static void main(String[] args) {
+
         Minefield minefield = new Minefield(5, 5, 5);
         minefield.createMines(2, 2, 5);
-
         // Print initial state of minefield
         System.out.println("Initial minefield:");
         minefield.printMinefield();
