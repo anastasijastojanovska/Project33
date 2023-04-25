@@ -68,7 +68,7 @@ public class Minefield {
     public void evaluateField() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                if (minefield[i][j].getStatus().equals("mine")) {
+                if (minefield[i][j].getStatus().equals("M")) {
                     incrementSurroundingCells(i, j);
                 }
             }
@@ -101,20 +101,20 @@ public class Minefield {
         Stack1Gen<Integer> stack = new Stack1Gen<>();
 
         while (mines > 0) {
-            int randX = (int) (Math.random() * rows);
-            int randY = (int) (Math.random() * columns);
-            if (randX == x && randY == y) {
+            int randomX = (int) (Math.random() * rows);
+            int randomY = (int) (Math.random() * columns);
+            if (randomX == x && randomY == y) {
                 continue;
             }
-            if (minefield[randX][randY].getStatus().equals("M") || minefield[randX][randY].getRevealed()) {
+            if (minefield[randomX][randomY].getStatus().equals("M") || minefield[randomX][randomY].getRevealed()) {
                 continue;
             }
-            minefield[randX][randY].setStatus("M");
-            stack.push(randX * columns + randY);
+            minefield[randomX][randomY].setStatus("M");
+            stack.push(randomX * columns + randomY);
             mines--;
         }
 
-        // Popping the mine positions from the stack and setting the corresponding cells in the minefield
+        //Popping the mine positions from the stack and setting the corresponding cells in the minefield
         while (!stack.isEmpty()) {
             int index = stack.pop();
             int row = index / columns;
@@ -136,16 +136,15 @@ public class Minefield {
      * @return boolean Return false if guess did not hit mine or if flag was placed, true if mine found.
      */
     public boolean guess(int x, int y, boolean flag) {
-        // Check if guess is in-bounds
+        //Check if guess is in bounds
         if (x < 0 || x >= rows || y < 0 || y >= columns) {
-            System.out.println("Invalid guess: out of bounds.");
+            System.out.println("Guess is out of bounds.");
             return false;
         }
-
-        // If flag is placed, check if there are enough flags remaining
+        //If flag is placed, check if enough flags ar left
         if (flag) {
             if (flags == 0) {
-                System.out.println("No more flags remaining.");
+                System.out.println("No more flags left.");
                 return false;
             }
             minefield[x][y].setStatus("F");
@@ -153,21 +152,20 @@ public class Minefield {
             return false;
         }
 
-        // Check if cell has already been revealed
+        //Check if cell has already been revealed
         if (minefield[x][y].getRevealed()) {
             System.out.println("Cell already revealed.");
             return false;
         }
-        // Check if the user has hit a mine
+        //Check if user hit a mine
         if (minefield[x][y].getStatus().equals("M")) {
             minefield[x][y].setRevealed(true);
             return true;
         }
-        // Check if the user has hit a cell with '0' status
+        //Check if user hit a cell with zero status
         if (minefield[x][y].getStatus().equals("0")) {
             revealZeroes(x, y);
         }
-        // Set the revealed status of the cell
         minefield[x][y].setRevealed(true);
         return false;
     }
