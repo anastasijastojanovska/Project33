@@ -13,45 +13,56 @@ public class Main {
         String diffLevel = GameScanner.nextLine();
 
         Minefield minefield; 
-        if(diffLevel.equals("0")){
-          minefield = new Minefield(5,5,5);
-        }
+        int mines;
+        int flags;
+
         if(diffLevel.equals("1")){
           minefield = new Minefield(9,9,12);
+          mines = 12;
+          flags = 12;
+        }
+        if(diffLevel.equals("2")){
+          mines = 40;
+          flags = 40;
+          minefield = new Minefield(20,20,40);
+        
         }
         else{
-          minefield = new Minefield(20,20,40);
+          minefield = new Minefield(5,5,5);
+          mines = 5;
+          flags = 5;
         }
 
+        System.out.println("Enter starting coordinates: [x] [y]");
+
+        int x = GameScanner.nextInt();
+        int y = GameScanner.nextInt();
+
+        System.out.println(x);
+        System.out.println(y);
         
-        minefield.createMines(2,2,5);
+        minefield.createMines(x,y,mines);
         minefield.evaluateField();
 
-        minefield.revealMines(3,5);
-
         minefield.printMinefield();
 
-        /*
-        Minefield minefield = new Minefield(5, 5, 5);
-        minefield.createMines(2, 2, 5);
-        // Print initial state of minefield
-        System.out.println("Initial minefield:");
-        minefield.printMinefield();
+        while(minefield.gameOver() != true){
 
-        // Guess a safe cell at (1,1)
-        System.out.println("Guessing safe cell at (1,1)");
-        minefield.guess(1, 1, false);
-        minefield.printMinefield();
+          System.out.printf("Enter cell coordinates and if you wish to place a flag(%d remaining): [x] [y] [F (-1,else)]", minefield.getFlags());
+          int cordX = GameScanner.nextInt();
+          int cordY = GameScanner.nextInt();
+          int flag = GameScanner.nextInt();
 
-        // Guess a mine at (2,2)
-        System.out.println("Guessing mine at (2,2)");
-        minefield.guess(2, 2, true);
-        minefield.printMinefield();
+          if(flag != -1){
+            minefield.guess(cordX, cordY, true);
+          }else{
+            minefield.guess(cordX, cordY, false);
+          }
 
-        // Evaluate field after guessing mine at (2,2)
-        System.out.println("Evaluating field after guessing mine at (2,2)");
-        minefield.evaluateField();
-        minefield.printMinefield();*/
+          minefield.printMinefield();
+        }
+
+      
     }
 
 }
