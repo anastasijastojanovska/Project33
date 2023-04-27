@@ -5,7 +5,7 @@ public class Minefield {
     private int rows;
     private int columns;
     private int flags;
-
+    private int mines;
     private int[][] cellValues;
 
 
@@ -27,10 +27,11 @@ public class Minefield {
      * @param columns    Number of columns.
      * @param flags      Number of flags, should be equal to mines
      */
-    public Minefield(int rows, int columns, int flags) {
+    public Minefield(int rows, int columns, int flags, int mines) {
         this.rows = rows;
         this.columns = columns;
         this.flags = flags;
+        this.mines = mines;
 
         this.cellValues = new int[rows][columns];
         this.minefield = new Cell[rows][columns];
@@ -104,14 +105,16 @@ public class Minefield {
      * @param y        Start y, avoid placing on this square.
      * @param mines      Number of mines to place.
      */
-    public void createMines(int x, int y, int mines) {
+    public void createMines(int x, int y) {
         // Avoiding to place a mine on the starting square
         minefield[x][y].setRevealed(true);
         minefield[x][y].setStatus("N");
 
         Stack1Gen<Integer> stack = new Stack1Gen<>();
 
-        while (mines > 0) {
+        int stackMines = mines;
+
+        while (stackMines > 0) {
             int randomX = (int) (Math.random() * rows);
             int randomY = (int) (Math.random() * columns);
             if (randomX == x && randomY == y) {
@@ -122,7 +125,7 @@ public class Minefield {
             }
             minefield[randomX][randomY].setStatus("M");
             stack.push(randomX * columns + randomY);
-            mines--;
+            stackMines--;
         }
 
         //Popping the mine positions from the stack and setting the corresponding cells in the minefield
@@ -158,7 +161,12 @@ public class Minefield {
                 System.out.println("No more flags left.");
                 return false;
             }
+
+            if(minefield[x][y].getStatus().equals("M")){
+              mines--;
+            }
             minefield[x][y].setStatus("F");
+            minefield[x][y].setRevealed(true);
             flags--;
             return false;
         }
@@ -196,7 +204,15 @@ public class Minefield {
             }
         }
 
+        if(flags < 1 && mines > 0){
+          System.out.printf("You have exhuasted your flags, there are still %d mine(s)remaining",mines);
+          return true;
+        }
 
+        if(flags < 1 && mines < 1){
+          System.out.println("You have won the game");
+          return true;
+        }
         return false;
     }
 
@@ -210,6 +226,7 @@ public class Minefield {
      * @param x      The x value the user entered.
      * @param y      The y value the user entered.
      */
+
     public void revealZeroes(int x, int y) {
       System.out.println("reveal zeroes");
       Stack1Gen<int[]> cellStack = new Stack1Gen<int[]>();
@@ -221,19 +238,20 @@ public class Minefield {
         int[] rootCords = cellStack.pop();
         minefield[rootCords[0]][rootCords[1]].setRevealed(true);
 
+        int i = rootCords[0];
+        int j = rootCords[1];
 
-        for (int i = rootCords[0]-1; i <= x+2; i++) {
-            for (int j = rootCords[1]-1; j <= y+2; j++) {
-                if (i >= 0 && i < rows && j >= 0 && j < columns) {
-                    if(minefield[i][j].getRevealed() != true && cellValues[i][j] == 0){
-                      int[] adjCell = {i,j};
+        int[][] neighbours = {{i-1,j}, {i,j-1},  {i,j+1}, {i+1,j}};
+
+        for(int k = 0; k < neighbours.length; ++k){
+          if(isValid(neighbours[k][0],neighbours[k][1])){
+              if(minefield[neighbours[k][0]][neighbours[k][1]].getRevealed() != true && cellValues[neighbours[k][0]][neighbours[k][1]] == 0){
+                      int[] adjCell = {neighbours[k][0],neighbours[k][1]};
                       cellStack.push(adjCell);
-                    }
-                }
+              }
+            }
           }
-       }
-
-      }
+        }
     }
 
     /**
@@ -259,6 +277,21 @@ public class Minefield {
           return;
         }
 
+        int i = frontCell[0];
+        int j = frontCell[1];
+
+        int[][] neighbours = {{i-1,j}, {i,j-1},  {i,j+1}, {i+1,j}};
+
+        for(int k = 0; k < neighbours.length; ++k){
+          if(isValid(neighbours[k][0],neighbours[k][1])){
+              if(minefield[neighbours[k][0]][neighbours[k][1]].getRevealed() != true){
+                      int[] reachableCell = {neighbours[k][0],neighbours[k][1]};
+                      CellQueue.add(reachableCell);
+
+              }
+            }
+        }
+/*
         for (int i = frontCell[0]-1; i <= x+1; i++) {
             for (int j = frontCell[1]-1; j <= y+1; j++) {
                 if (i >= 0 && i < rows && j >= 0 && j < columns) {
@@ -268,7 +301,7 @@ public class Minefield {
                     }
                 }
           }
-       } 
+       } */
       }
     }
 
@@ -277,8 +310,8 @@ public class Minefield {
      *
      * @param x       The x value the user entered.
      * @param y       The y value the user entered.
-     */
-
+     
+    
     public void revealStart(int x, int y) {
 
     }
@@ -289,35 +322,7 @@ public class Minefield {
      * *This method should print out when debug mode has been selected. 
      */
 
-    /*
-    public void printMinefield() {
-
-        for (int i = 0; i < rows; i++) {
-            System.out.printf("%2d |", i);
-            for (int j = 0; j < columns; j++) {
-                if (minefield[i][j].getStatus().equals("M")){
-                    System.out.print(ANSI_RED + "M" + ANSI_GREY_BG + "\t");
-                } else if (minefield[i][j].getRevealed()) {
-                    int count = 0;
-                    try {
-                        count = cellValues[i][j];
-                    } catch (NumberFormatException e) {
-                        // handle the exception by treating the status as 0
-                    }
-                    if (count < 1) {
-                        System.out.print("0" + "\t");
-                    } else {
-                        System.out.printf(" %d " + "\t", count);
-                    }
-                } else {
-                    System.out.print(" - " + "\t");
-                }
-            }
-            System.out.println("|");
-        }
-
-    }*/
-
+    /**/
     public void printMinefield() {
 
         for (int i = 0; i < rows; i++) {
@@ -326,7 +331,7 @@ public class Minefield {
                 if (minefield[i][j].getStatus().equals("M")){
                     System.out.print(ANSI_RED + "M" + ANSI_GREY_BG + "\t");
                 } 
-                if (minefield[i][j].getStatus().equals("F")){
+                else if (minefield[i][j].getStatus().equals("F")){
                   System.out.print(ANSI_BLUE + "F" + ANSI_GREY_BG + "\t");
                 }
                 else if (minefield[i][j].getRevealed()) {
@@ -357,6 +362,45 @@ public class Minefield {
      * @return String The string that is returned only has the squares that has been revealed to the user or that the user has guessed.
      */
     public String toString() {
-    return "";
+
+    String output = "";
+
+    for (int i = 0; i < rows; i++) {
+
+        output += String.format("%2d |", i);
+
+        for (int j = 0; j < columns; j++) {
+            if(!minefield[i][j].getRevealed()){
+              output += " - \t";
+            }
+            else if (minefield[i][j].getStatus().equals("M")){
+                output += ANSI_RED + "M" + ANSI_GREY_BG + "\t";
+            }
+
+            else if (minefield[i][j].getStatus().equals("F")){
+               output += ANSI_BLUE + "F" + ANSI_GREY_BG + "\t";
+            }
+            else if (minefield[i][j].getRevealed()) {
+                    int count = 0;
+                    try {
+                        count = cellValues[i][j];
+                    } catch (NumberFormatException e) {
+                        // handle the exception by treating the status as 0
+                    }
+                    if (count < 1) {
+                        output += ANSI_GREEN + "0" + ANSI_GREY_BG + "\t";
+                    } else {
+                        output += String.format(ANSI_GREEN + " %d " + ANSI_GREY_BG + "\t", count);
+                    }
+                } else {
+                    int count1 = cellValues[i][j];
+                    output += String.format(" %d " + "\t", count1);
+
+                }
+            }
+            output += "|\n";
+        }
+
+    return output;
     }
 }

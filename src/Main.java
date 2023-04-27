@@ -15,23 +15,29 @@ public class Main {
         Minefield minefield; 
         int mines;
         int flags;
+        boolean debug;
 
         if(diffLevel.equals("1")){
-          minefield = new Minefield(9,9,12);
+          minefield = new Minefield(9,9,12,12);
           mines = 12;
           flags = 12;
         }
         if(diffLevel.equals("2")){
           mines = 40;
           flags = 40;
-          minefield = new Minefield(20,20,40);
+          minefield = new Minefield(20,20,40,40);
         
         }
         else{
-          minefield = new Minefield(5,5,5);
+          minefield = new Minefield(5,5,5,5);
           mines = 5;
           flags = 5;
         }
+
+        System.out.println("Debug mode(no(-1), yes(else))");
+
+        int debugInput = GameScanner.nextInt();
+        debug = debugInput != -1 ? true: false;
 
         System.out.println("Enter starting coordinates: [x] [y]");
 
@@ -40,11 +46,16 @@ public class Main {
 
         System.out.println(x);
         System.out.println(y);
-        
-        minefield.createMines(x,y,mines);
-        minefield.evaluateField();
 
-        minefield.printMinefield();
+        minefield.createMines(x,y);
+        minefield.evaluateField();
+        minefield.revealMines(x,y);
+
+        System.out.println(minefield);
+
+        if(debug){
+            minefield.printMinefield();
+        }
 
         while(minefield.gameOver() != true){
 
@@ -59,7 +70,11 @@ public class Main {
             minefield.guess(cordX, cordY, false);
           }
 
-          minefield.printMinefield();
+          System.out.println(minefield);
+
+          if(debug){
+            minefield.printMinefield();
+          }
         }
 
       
