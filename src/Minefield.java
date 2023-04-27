@@ -325,7 +325,11 @@ public class Minefield {
             for (int j = 0; j < columns; j++) {
                 if (minefield[i][j].getStatus().equals("M")){
                     System.out.print(ANSI_RED + "M" + ANSI_GREY_BG + "\t");
-                } else if (minefield[i][j].getRevealed()) {
+                } 
+                if (minefield[i][j].getStatus().equals("F")){
+                  System.out.print(ANSI_BLUE + "F" + ANSI_GREY_BG + "\t");
+                }
+                else if (minefield[i][j].getRevealed()) {
                     int count = 0;
                     try {
                         count = cellValues[i][j];
