@@ -9,13 +9,14 @@ public class Main {
 
         Scanner GameScanner = new Scanner(System.in);
 
-        System.out.println("Enter difficulty level for the game(Easy(0), Medium(1), Hard(2): ");
+        System.out.println("Enter difficulty level for the game(Easy(0), Medium(1), Hard(2)): ");
         String diffLevel = GameScanner.nextLine();
 
         Minefield minefield; 
         int mines;
         int flags;
         boolean debug;
+        boolean firstTurn = true;
 
         if(diffLevel.equals("1")){
           minefield = new Minefield(9,9,12,12);
@@ -44,9 +45,6 @@ public class Main {
         int x = GameScanner.nextInt();
         int y = GameScanner.nextInt();
 
-        System.out.println(x);
-        System.out.println(y);
-
         minefield.createMines(x,y);
         minefield.evaluateField();
         minefield.revealMines(x,y);
@@ -57,7 +55,7 @@ public class Main {
             minefield.printMinefield();
         }
 
-        while(minefield.gameOver() != true){
+        while(minefield.gameOver(firstTurn) != true){
 
           System.out.printf("Enter cell coordinates and if you wish to place a flag(%d remaining): [x] [y] [F (-1,else)]", minefield.getFlags());
           int cordX = GameScanner.nextInt();
@@ -75,6 +73,7 @@ public class Main {
           if(debug){
             minefield.printMinefield();
           }
+          firstTurn = false;
         }
 
       

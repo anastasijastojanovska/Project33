@@ -21,6 +21,11 @@ public class Minefield {
     public static final String ANSI_RED = "\u001b[31m";
     public static final String ANSI_GREEN = "\u001b[32m";
     public static final String ANSI_GREY_BG = "\u001b[0m";
+    public static final String ANSI_WHITE_CYAN = "\u001b[37;46m";
+    public static final String ANSI_MAGENTA = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001b[36m";
+    public static final String ANSI_WHITE = "\u001b[37m";
+
     /**
      * Constructor
      * @param rows       Number of rows.
@@ -194,7 +199,12 @@ public class Minefield {
      *
      * @return boolean Return false if game is not over and squares have yet to be revealed, otheriwse return true.
      */
-    public boolean gameOver() {
+    public boolean gameOver(boolean firstTurn) {
+
+        // Exception for first turn to continue the game despite a mine being revealed(assuming that user is going to flag it the next turn
+        if(firstTurn){
+          return false;
+        }
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 if (minefield[i][j].getStatus().equals("M") && minefield[i][j].getRevealed() == true) {
@@ -228,7 +238,7 @@ public class Minefield {
      */
 
     public void revealZeroes(int x, int y) {
-      System.out.println("reveal zeroes");
+
       Stack1Gen<int[]> cellStack = new Stack1Gen<int[]>();
 
       int[] startingCords = {x,y};
@@ -342,9 +352,9 @@ public class Minefield {
                         // handle the exception by treating the status as 0
                     }
                     if (count < 1) {
-                        System.out.print(ANSI_GREEN + "0" + ANSI_GREY_BG + "\t");
+                        System.out.print(colorFinder(count) + "0" + ANSI_GREY_BG + "\t");
                     } else {
-                        System.out.printf(ANSI_GREEN + " %d " + ANSI_GREY_BG + "\t", count);
+                        System.out.printf(colorFinder(count) + " %d " + ANSI_GREY_BG + "\t", count);
                     }
                 } else {
                     int count1 = cellValues[i][j];
@@ -356,12 +366,44 @@ public class Minefield {
 
     }
 
+    public String colorFinder(int n){
+      String color = "";
+
+      switch(n){
+        case 0: color = ANSI_WHITE;
+                break;
+
+        case 1: color = ANSI_GREEN;
+                break;
+
+        case 2: color = ANSI_CYAN;
+                break;
+
+        case 3: color = ANSI_YELLOW;
+                break;
+        case 4: color = ANSI_BLUE;
+                break;
+        case 5: color = ANSI_MAGENTA;
+                break;
+        case 6: color = ANSI_WHITE_CYAN;
+                break;
+        case 7: color = ANSI_BLUE_BRIGHT;
+                break;
+        case 8: color = ANSI_RED;
+                break;
+        case 9: color = ANSI_RED_BRIGHT;
+                break;
+      }
+
+      return color;
+    }
     /**
      * toString
      *
      * @return String The string that is returned only has the squares that has been revealed to the user or that the user has guessed.
      */
     public String toString() {
+
 
     String output = "";
 
@@ -388,9 +430,9 @@ public class Minefield {
                         // handle the exception by treating the status as 0
                     }
                     if (count < 1) {
-                        output += ANSI_GREEN + "0" + ANSI_GREY_BG + "\t";
+                        output += colorFinder(count) + "0" + ANSI_GREY_BG + "\t";
                     } else {
-                        output += String.format(ANSI_GREEN + " %d " + ANSI_GREY_BG + "\t", count);
+                        output += String.format(colorFinder(count) + " %d " + ANSI_GREY_BG + "\t", count);
                     }
                 } else {
                     int count1 = cellValues[i][j];
