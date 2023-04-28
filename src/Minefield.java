@@ -301,17 +301,6 @@ public class Minefield {
               }
             }
         }
-/*
-        for (int i = frontCell[0]-1; i <= x+1; i++) {
-            for (int j = frontCell[1]-1; j <= y+1; j++) {
-                if (i >= 0 && i < rows && j >= 0 && j < columns) {
-                    if(minefield[i][j].getRevealed() != true){
-                      int[] reachableCell = {i,j};
-                      CellQueue.add(reachableCell);
-                    }
-                }
-          }
-       } */
       }
     }
 
